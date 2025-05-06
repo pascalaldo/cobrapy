@@ -23,6 +23,15 @@ try:
 except ImportError:
     jsonschema = None
 
+try:
+    import pytest_benchmark
+except ImportError:
+    pytest_benchmark = None
+
+if pytest_benchmark:
+    from pytest_benchmark.fixture import BenchmarkFixture
+
+
 # ----------------------------------
 # Definition of SBML files to test
 # ----------------------------------
@@ -89,6 +98,11 @@ def test_validate(trial: IOTrial, data_directory: Path) -> None:
 
 class TestCobraIO:
     """Tests the read and write functions."""
+
+    @classmethod
+    def download_and_read_sbml_model(cls, filename):
+        filename = Path(filename).name
+        url = f"http://bigg.ucsd.edu/static/models/{filename}"
 
     @classmethod
     def compare_models(cls, name: str, model1: Model, model2: Model) -> None:
@@ -275,6 +289,27 @@ def io_trial(
     reread_model = request.param.read_function(test_output_filename)
     unlink(test_output_filename)
     return request.param.name, reference_model, test_model, reread_model
+
+
+def test_read_very_big_model_benchmark(
+    very_big_model_content: str, benchmark: BenchmarkFixture
+) -> None:
+    def _() -> None:
+        test_model = read_sbml_model(very_big_model_content)
+        assert test_model
+
+    benchmark(_)
+
+
+@pytest.mark.parametrize("trial", trials, ids=trial_names)
+def test_read_model_benchmark(
+    trial: IOTrial, data_directory: Path, benchmark: BenchmarkFixture
+) -> None:
+    def _() -> None:
+        test_model = trial.read_function(data_directory / trial.test_file)
+        assert test_model
+
+    benchmark(_)
 
 
 def test_filehandle(data_directory: Path, tmp_path: Path) -> None:

@@ -3,6 +3,8 @@
 from pathlib import Path
 from pickle import load as _load
 from typing import List, Tuple
+import gzip
+import urllib.request
 
 import importlib_resources
 import pytest
@@ -134,6 +136,14 @@ def tiny_toy_model() -> Model:
     tiny.add_reactions([d1])
     tiny.objective = "ex1"
     return tiny
+
+
+@pytest.fixture(scope="session")
+def very_big_model_content():
+    url = "http://bigg.ucsd.edu/static/models/RECON1.xml.gz"
+    content = urllib.request.urlopen(url).read()
+    content = gzip.decompress(content).decode("utf-8")
+    return content
 
 
 stable_optlang = ["glpk", "cplex", "gurobi"]
