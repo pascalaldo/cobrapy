@@ -301,6 +301,16 @@ def test_read_very_big_model_benchmark(
     benchmark(_)
 
 
+def test_read_biggest_model_benchmark(
+    biggest_model_content: str, benchmark: BenchmarkFixture
+) -> None:
+    def _() -> None:
+        test_model = read_sbml_model(biggest_model_content)
+        assert test_model
+
+    benchmark(_)
+
+
 @pytest.mark.parametrize("trial", trials, ids=trial_names)
 def test_read_model_benchmark(
     trial: IOTrial, data_directory: Path, benchmark: BenchmarkFixture

@@ -146,6 +146,14 @@ def very_big_model_content():
     return content
 
 
+@pytest.fixture(scope="session")
+def biggest_model_content():
+    url = "http://bigg.ucsd.edu/static/models/Recon3D.xml.gz"
+    content = urllib.request.urlopen(url).read()
+    content = gzip.decompress(content).decode("utf-8")
+    return content
+
+
 stable_optlang = ["glpk", "cplex", "gurobi"]
 all_solvers = ["optlang-" + s for s in stable_optlang if s in sutil.solvers]
 
